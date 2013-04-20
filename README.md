@@ -30,7 +30,8 @@ object** is represented by a promise.
 Modules using Poseidon
 ----------------------
 
-* [`poseidon-mongo`](https://npmjs.org/package/poseidon-mongo)
+* [`poseidon-mongo`](https://github.com/playlyfe/poseidon-mongo)
+* [`poseidon-memcached`](https://github.com/playlyfe/poseidon-memcached)
 
 If you want to get your module listed here, just let me know at
 `johny@playlyfe.com`.
