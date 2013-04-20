@@ -1,7 +1,7 @@
 {
   "name": "poseidon",
   "description": "Poseidon allows you to wrap existing Node Module APIs in a simple promise layer using Q for easier programming.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "keywords": ["Q", "promise", "api", "wrapper", "playlyfe"],
   "main": "./index",
   "repository": {
@@ -9,7 +9,7 @@
     "url": "http://github.com/playlyfe/poseidon.git"
   },
   "bugs": {
-    "url": "http://github.com/playlyfe/playlyfe-express-app/issues"
+    "url": "http://github.com/playlyfe/poseidon/issues"
   },
   "author": {
     "name": "Johny Jose",

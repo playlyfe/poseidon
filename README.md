@@ -7,26 +7,33 @@ simpler code free from callbacks.
 Methods
 -------
 
-###wrap(source, function)
+### wrap(source, function)
 The `wrap` function is the simplest wrapping function. It returns a function
 which executes the original function on the **source object** and returns a
 promise instead of requiring the user to provide a callback.
 
-###wrapReturn(source, function, constructors...)
+### wrapReturn(source, function, constructors...)
 The `wrapReturn` function accepts a list of constructors which will be applied
 to the values returned by the wrapped function. This is useful especially when
 the function returns objects which have APIs that we also want to wrap using
 Poseidon.
 
-###wrapPromise(promise, function)
+### wrapPromise(promise, function)
 The `wrapPromise` function can wrap a function on a **source object** which will
 be the result of a promise. It assumes the promise will resolve to just a
  single value.
 
-###wrapPromiseReturn(promise, function, constructors...)
+### wrapPromiseReturn(promise, function, constructors...)
 The `wrapPromiseReturn` is the equivalent of the `wrapReturn` when the **source
 object** is represented by a promise.
 
+Modules using Poseidon
+----------------------
+
+* [`poseidon-mongo`](https://npmjs.org/package/poseidon-mongo)
+
+If you want to get your module listed here, just let me know at
+`johny@playlyfe.com`.
 
 License
 -------
