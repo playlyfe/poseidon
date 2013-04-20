@@ -1,2 +1,12 @@
 coffee = require('coffee-script');
-module.exports = process.env.PLAYLYFE_TEST ? require('./src-cov/poseidon') : require('./src/poseidon');
+var index = null;
+if (process.env.PLAYLYFE_TEST) {
+  try {
+    index = require('./src-cov/poseidon');
+  } catch(e) {
+    index = require('./src/poseidon');
+  }
+} else {
+  index = require('./src/poseidon');
+}
+module.exports = index;
