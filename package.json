@@ -1,8 +1,14 @@
 {
   "name": "poseidon",
   "description": "Poseidon allows you to wrap existing Node Module APIs in a simple promise layer using Q for easier programming.",
-  "version": "0.0.4",
-  "keywords": ["Q", "promise", "api", "wrapper", "playlyfe"],
+  "version": "0.1.0",
+  "keywords": [
+    "Q",
+    "promise",
+    "api",
+    "wrapper",
+    "playlyfe"
+  ],
   "main": "./index",
   "repository": {
     "type": "git",
@@ -16,13 +22,15 @@
     "email": "johny@playlyfe.com",
     "url": "http://blog.playlyfe.com"
   },
-  "licenses": [{
-    "type": "MIT",
-    "url": "http://www.opensource.org/licenses/MIT"
-  }],
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "http://www.opensource.org/licenses/MIT"
+    }
+  ],
   "dependencies": {
-    "q": "~0.9.5",
-    "coffee-script": "~1.6.2"
+    "coffee-script": "~1.6.2",
+    "bluebird": "~1.0.0"
   },
   "devDependencies": {
     "grunt": "~0.4.1",

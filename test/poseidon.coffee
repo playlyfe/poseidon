@@ -1,4 +1,4 @@
-Q = require 'q'
+Promise = require 'bluebird'
 poseidon = require '../index'
 
 describe 'The wrap function', ->
@@ -29,21 +29,21 @@ describe 'The wrap function', ->
       next()
     .done()
 
-  it 'returns a Q promise with the resolved value', (next) ->
+  it 'returns a Promise promise with the resolved value', (next) ->
     self = @
     wrappedApi = {}
     wrappedApi['foo'] = poseidon.wrap(@api, 'foo')
     wrappedApi['bar'] = poseidon.wrap(@api, 'bar')
     wrappedApi['barfoo'] = poseidon.wrap(@api, 'barfoo')
     result = wrappedApi.foo()
-    expect(Q.isPromise(result)).to.equal true
+    expect(Promise.is(result)).to.equal true
     result.then (value) ->
       expect(value).to.equal true
       wrappedApi.bar()
     .then (value) ->
       expect(value).to.equal false
       wrappedApi.barfoo()
-    .fail (err) ->
+    .catch (err) ->
       expect(err).to.be.instanceof Error
       expect(err.message).to.equal 'omg!'
       next()
@@ -84,7 +84,7 @@ describe 'The wrapReturn function', ->
       next()
     .done()
 
-  it 'returns a Q promise with the resolved value passed to the constructor', (next) ->
+  it 'returns a Promise promise with the resolved value passed to the constructor', (next) ->
     self = @
     wrappedApi = {}
     wrappedApi['foo'] = poseidon.wrapReturn(@api, 'foo', @obj)
@@ -92,7 +92,7 @@ describe 'The wrapReturn function', ->
     wrappedApi['foobar'] = poseidon.wrapReturn(@api, 'foobar', @obj)
     wrappedApi['barfoo'] = poseidon.wrapReturn(@api, 'barfoo', @obj)
     result = wrappedApi.foo()
-    expect(Q.isPromise(result)).to.equal true
+    expect(Promise.is(result)).to.equal true
     result.then (value) ->
       expect(value).to.be.instanceof self.obj
       expect(value.x).to.equal 1
@@ -108,7 +108,7 @@ describe 'The wrapReturn function', ->
         expect(value.x).to.be.equal 1
 
       wrappedApi.barfoo()
-    .fail (err) ->
+    .catch (err) ->
       expect(err).to.be.instanceof Error
       expect(err.message).to.equal 'omg!'
       next()
@@ -125,7 +125,7 @@ describe 'the wrapPromise function', ->
     sinon.spy @api, 'foo'
     sinon.spy @api, 'bar'
     sinon.spy @api, 'barfoo'
-    _source = Q.defer()
+    _source = Promise.pending()
     _source.resolve @api
     @promise = _source.promise
 
@@ -145,21 +145,21 @@ describe 'the wrapPromise function', ->
       next()
     .done()
 
-  it 'returns a Q promise with the resolved value', (next) ->
+  it 'returns a Bluebird promise with the resolved value', (next) ->
     self = @
     wrappedApi = {}
     wrappedApi['foo'] = poseidon.wrapPromise(@promise, 'foo')
     wrappedApi['bar'] = poseidon.wrapPromise(@promise, 'bar')
     wrappedApi['barfoo'] = poseidon.wrapPromise(@promise, 'barfoo')
     result = wrappedApi.foo()
-    expect(Q.isPromise(result)).to.equal true
+    expect(Promise.is(result)).to.equal true
     result.then (value) ->
       expect(value).to.equal true
       wrappedApi.bar()
     .then (value) ->
       expect(value).to.equal false
       wrappedApi.barfoo()
-    .fail (err) ->
+    .catch (err) ->
       expect(err).to.be.instanceof Error
       expect(err.message).to.equal 'omg!'
       next()
@@ -187,7 +187,7 @@ describe 'The wrapPromiseReturn function', ->
     sinon.spy @api, 'bar'
     sinon.spy @api, 'foobar'
     sinon.spy @api, 'barfoo'
-    _source = Q.defer()
+    _source = Promise.pending()
     _source.resolve @api
     @promise = _source.promise
 
@@ -208,7 +208,7 @@ describe 'The wrapPromiseReturn function', ->
       next()
     .done()
 
-  it 'returns a Q promise with the resolved value passed to the constructor', (next) ->
+  it 'returns a Promise promise with the resolved value passed to the constructor', (next) ->
     self = @
     wrappedApi = {}
     wrappedApi['foo'] = poseidon.wrapPromiseReturn(@promise, 'foo', @obj)
@@ -216,7 +216,7 @@ describe 'The wrapPromiseReturn function', ->
     wrappedApi['foobar'] = poseidon.wrapPromiseReturn(@promise, 'foobar', @obj)
     wrappedApi['barfoo'] = poseidon.wrapPromiseReturn(@promise, 'barfoo', @obj)
     result = wrappedApi.foo()
-    expect(Q.isPromise(result)).to.equal true
+    expect(Promise.is(result)).to.equal true
     result.then (value) ->
       expect(value).to.be.instanceof self.obj
       expect(value.x).to.equal 1
@@ -232,7 +232,7 @@ describe 'The wrapPromiseReturn function', ->
         expect(value.x).to.be.equal 1
 
       wrappedApi.barfoo()
-    .fail (err) ->
+    .catch (err) ->
       expect(err).to.be.instanceof Error
       expect(err.message).to.equal 'omg!'
       next()
