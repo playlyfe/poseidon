@@ -177,7 +177,13 @@ Sample configuration file from `poseidon-mongo`:
         "return": ["Collection"]
       },
       "collections": {
-        "return": ["Collection"]
+        "return": [
+          // The value is an array of Collection items.
+          {
+            "name": "Collection"
+            "array": true
+          }
+        ]
       },
       "createCollection": {
         "return": ["Collection"]

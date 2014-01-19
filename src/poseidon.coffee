@@ -59,14 +59,19 @@ class Poseidon
             castValues = []
             if functionSchema.return?
               for index, constructorName of functionSchema.return
-                if constructorName isnt null then castValues.push "arguments[#{parseInt(index)+1}] = new #{constructorName}(arguments[#{parseInt(index)+1}]);"
+                if constructorName isnt null
+                  if constructorName instanceof Object
+                    if constructorName.array?
+                      castValues.push "arguments[#{parseInt(index)+1}] = arguments[#{parseInt(index)+1}].map(function(item) { return new #{constructorName.name}(item); });"
+                  else
+                    castValues.push "arguments[#{parseInt(index)+1}] = new #{constructorName}(arguments[#{parseInt(index)+1}]);"
 
             hunk.push """
             var callback = function () {
-              #{castValues.join("\n")}
               if (arguments[0]) {
                 deferred.reject(arguments[0]);
               } else {
+                #{castValues.join("\n")}
                 switch(arguments.length) {
                   case 2:
                     deferred.resolve(arguments[1]);
