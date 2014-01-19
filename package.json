@@ -1,9 +1,12 @@
 {
   "name": "poseidon",
-  "description": "Poseidon allows you to wrap existing Node Module APIs in a simple promise layer using Q for easier programming.",
+  "description": "Simplify Node Callback APIs with an optimized promise layer that doesnt compromise on performance.",
   "version": "0.1.0",
   "keywords": [
-    "Q",
+    "bluebird",
+    "optimized",
+    "performance",
+    "callback",
     "promise",
     "api",
     "wrapper",
@@ -30,7 +33,9 @@
   ],
   "dependencies": {
     "coffee-script": "~1.6.2",
-    "bluebird": "~1.0.0"
+    "bluebird": "~1.0.0",
+    "esprima": "~1.0.4",
+    "escodegen": "~1.1.0"
   },
   "devDependencies": {
     "grunt": "~0.4.1",

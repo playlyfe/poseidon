@@ -1,86 +1,161 @@
-###
-Poseidon
-========
-Poseidon is a tiny module which provides functions for wrapping the APIs of
-existing node modules using the **Bluebird** library to write smaller, cleaner and
-simpler code free from callbacks.
-###
-
+esprima = require 'esprima'
+escodegen = require 'escodegen'
 Promise = require 'bluebird'
+fs = require 'fs'
 
-module.exports =
-  Promise: Promise
+class Poseidon
 
-  ###
-  The `wrap` function is the simplest wrapping function. It returns a function
-  which executes the original function on the **source object** and returns a
-  promise instead of requiring the user to provide a callback.
-  ###
+  @Promise: Promise
 
-  wrap: (source, func) ->
-    Promise.promisify(source[func], source)
+  constructor:(configuration = {}) ->
+    @configuration = configuration
+    return
 
-  ###
-  The `wrapReturn` function accepts a list of constructors which will be applied
-  to the values returned by the wrapped function. This is useful especially when
-  the function returns objects which have APIs that we also want to wrap using
-  Poseidon.
-  ###
+  generate: (path) ->
+    files = []
+    for className, classSchema of @configuration
+      file = {}
+      file.name = "#{className.toLowerCase()}.js"
 
-  wrapReturn: (source, func, constructors...) ->
-    ->
-      _result = Promise.pending()
-      args = Array.prototype.slice.call(arguments).concat (err, values...) ->
-        if err then return _result.reject err
-        objs = []
-        for index, value of values
-          if value instanceof Array
-            objVals = []
-            for objVal in value
-              objVals.push new constructors[index](objVal)
-            objs.push objVals
+      code = file.code = []
+
+      dependencies = ["Promise = require('poseidon').Promise;"]
+      for dependency, dependencyPath of classSchema.require
+        dependencies.push "#{dependency} = require('#{dependencyPath}');"
+
+      # Generate class constructor
+      code.push """
+      function #{className}(#{classSchema.constructor.params.join(", ")}) {
+        #{classSchema.constructor.body}
+      }
+      """
+      for functionName, functionSchema of classSchema.functions
+        # Set default options
+        functionSchema.wrap ?= true
+
+        # Generate class method
+        hunk = ["""
+          #{className}.prototype.#{functionName} = function () {
+            var args = arguments;
+        """]
+
+        if classSchema.type is 'promise'
+          instanceIdentifier = "instanceValue"
+        else
+          instanceIdentifier = "this.instance"
+        # Use custom body if specified
+        if functionSchema.body?
+          hunk.push(functionSchema.body)
+        else
+          # Create deferred and callback if wrap option is true
+          if functionSchema.wrap
+            hunk.push "var deferred = Promise.pending();"
+
+          if classSchema.type is 'promise'
+            hunk.push "this.instance.then(function (instanceValue) {"
+
+          if functionSchema.wrap
+            # Code to wrap return values
+            castValues = []
+            if functionSchema.return?
+              for index, constructorName of functionSchema.return
+                if constructorName isnt null then castValues.push "arguments[#{parseInt(index)+1}] = new #{constructorName}(arguments[#{parseInt(index)+1}]);"
+
+            hunk.push """
+            var callback = function () {
+              #{castValues.join("\n")}
+              if (arguments[0]) {
+                deferred.reject(arguments[0]);
+              } else {
+                switch(arguments.length) {
+                  case 2:
+                    deferred.resolve(arguments[1]);
+                    break;
+                  case 3:
+                    deferred.resolve([arguments[1], arguments[2]]);
+                    break;
+                  case 4:
+                    deferred.resolve([arguments[1], arguments[2], arguments[3]]);
+                    break;
+                  case 5:
+                    deferred.resolve([arguments[1], arguments[2], arguments[3], arguments[4]]);
+                    break;
+                  case 6:
+                    deferred.resolve([arguments[1], arguments[2], arguments[3], arguments[4], arguments[5]]);
+                    break;
+                  default:
+                    deferred.resolve(arguments.slice(1));
+                    break;
+                }
+              }
+            };
+            """
+
+          # Generate optimized function call
+          hunk.push """
+          switch(args.length) {
+            case 0:
+              #{if functionSchema.wrap then "" else "result = "}#{instanceIdentifier}.#{functionName}(#{if functionSchema.wrap then "callback" else ""});
+              break;
+            case 1:
+              #{if functionSchema.wrap then "" else "result = "}#{instanceIdentifier}.#{functionName}(args[0]#{if functionSchema.wrap then ", callback" else ""});
+              break;
+            case 2:
+              #{if functionSchema.wrap then "" else "result = "}#{instanceIdentifier}.#{functionName}(args[0], args[1]#{if functionSchema.wrap then ", callback" else ""});
+              break;
+            case 3:
+              #{if functionSchema.wrap then "" else "result = "}#{instanceIdentifier}.#{functionName}(args[0], args[1], args[2]#{if functionSchema.wrap then ", callback" else ""});
+              break;
+            case 4:
+              #{if functionSchema.wrap then "" else "result = "}#{instanceIdentifier}.#{functionName}(args[0], args[1], args[2], args[3]#{if functionSchema.wrap then ", callback" else ""});
+              break;
+            case 5:
+              #{if functionSchema.wrap then "" else "result = "}#{instanceIdentifier}.#{functionName}(args[0], args[1], args[2], args[3], args[4]#{if functionSchema.wrap then ", callback" else ""});
+              break;
+            default:
+              #{if functionSchema.wrap then "" else "result = "}#{instanceIdentifier}.#{functionName}.apply(#{instanceIdentifier}, #{if functionSchema.wrap then "Array.prototype.slice.call(null, args).concat(callback)" else "args"});
+              break;
+          }
+          """
+          if classSchema.type is 'promise'
+            hunk.push "});"
+
+          # Return promise if wrap option is set
+          if functionSchema.wrap
+            hunk.push "return deferred.promise;"
           else
-            objs.push new constructors[index](value)
-        _result.resolve.apply _result, objs
-      source[func].apply source, args
-      _result.promise
+            # If no wrap option is allowed only 1 value can be set in return
+            if functionSchema.return?
+              if functionSchema.return.length > 1 then throw new Error("Only 1 return value allowed when no callback is present")
+              hunk.push "return new #{functionSchema.return[0]}(result);"
+            else if functionSchema.chain
+              hunk.push "return this;"
+            else
+              hunk.push "return result;"
 
-  ###
-  The `wrapPromise` function can wrap a function on a **source object** which will
-  be the result of a promise. It assumes the promise will resolve to just a
-  single value.
-  ###
+        # End of function call
+        hunk.push "};"
+        code.push hunk.join("\n")
 
-  wrapPromise: (promise, func) ->
-    throw new Error('Object is not a Promise') unless Promise.is promise
-    ->
-      args = Array.prototype.slice.call arguments
-      promise.then (source) ->
-        Promise.promisify(source[func], source).apply(source, args)
+      code.push "module.exports = #{className};"
+      try
+        # Parse code to ensure generated javascript is valid
+        code = "#{dependencies.join("\n")}\n#{code.join("\n")}"
 
-  ###
-  The `wrapPromiseReturn` is the equivalent of the `wrapReturn` when the **source
-  object** is represented by a promise.
-  ###
+        # Pretty format code
+        file.code = escodegen.generate(esprima.parse(code))
+        files.push file
+      catch err
+        codeLines = code.split("\n")
+        throw new Error("Error generating class #{className}\n#{err.message}\n#{codeLines[err.lineNumber-1]}")
 
-  wrapPromiseReturn: (promise, func, constructors...) ->
-    throw new Error('Object is not a Promise') unless Promise.is promise
-    ->
-      _result = Promise.defer()
-      args = Array.prototype.slice.call(arguments).concat((err, values...) ->
-        if err then _result.reject err
-        objs = []
-        for index, value of values
-          if value instanceof Array
-            objVals = []
-            for objVal in value
-              objVals.push new constructors[index](objVal)
-            objs.push objVals
-          else
-            objs.push new constructors[index](value)
-        _result.resolve.apply _result, objs
-        return
-      )
-      promise.then (source) ->
-        source[func].apply source, args
-      _result.promise
+    if path?
+      write = Promise.promisify(fs.writeFile, fs)
+      Promise.map files, (file) ->
+        write("#{path}/#{file.name}", file.code)
+      .then ->
+        Promise.resolve files
+    else
+      files
+
+module.exports = Poseidon
