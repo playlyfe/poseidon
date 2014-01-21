@@ -69,10 +69,17 @@ class Poseidon
             hunk.push """
             var callback = function () {
               if (arguments[0]) {
-                deferred.reject(arguments[0]);
+                if (arguments.length === 1 || arguments[1] == null) {
+                  deferred.reject(arguments[0]);
+                } else {
+                  deferred.reject(Array.prototype.slice.call(arguments, 0));
+                }
               } else {
                 #{castValues.join("\n")}
                 switch(arguments.length) {
+                  case 0:
+                    deferred.resolve();
+                    break;
                   case 2:
                     deferred.resolve(arguments[1]);
                     break;
@@ -89,7 +96,7 @@ class Poseidon
                     deferred.resolve([arguments[1], arguments[2], arguments[3], arguments[4], arguments[5]]);
                     break;
                   default:
-                    deferred.resolve(arguments.slice(1));
+                    deferred.resolve(Array.prototype.slice.call(null, arguments, 1));
                     break;
                 }
               }
