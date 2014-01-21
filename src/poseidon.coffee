@@ -19,9 +19,9 @@ class Poseidon
 
       code = file.code = []
 
-      dependencies = ["Promise = require('poseidon').Promise;"]
+      dependencies = ["var Promise = require('poseidon').Promise;"]
       for dependency, dependencyPath of classSchema.require
-        dependencies.push "#{dependency} = require('#{dependencyPath}');"
+        dependencies.push "var #{dependency} = require('#{dependencyPath}');"
 
       # Generate class constructor
       code.push """
