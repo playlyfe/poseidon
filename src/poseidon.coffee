@@ -32,11 +32,11 @@ class Poseidon
       for functionName, functionSchema of classSchema.functions
         # Set default options
         functionSchema.wrap ?= true
+        functionSchema.params ?= []
 
         # Generate class method
         hunk = ["""
-          #{className}.prototype.#{functionName} = function () {
-            var args = arguments;
+          #{className}.prototype.#{functionName} = function (#{if functionSchema.body? then "#{functionSchema.params.join(", ")}){\n" else "){\n var args = arguments;"}
         """]
 
         if classSchema.type is 'promise'
