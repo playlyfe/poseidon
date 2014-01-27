@@ -5,8 +5,6 @@ fs = require 'fs'
 
 class Poseidon
 
-  @Promise: Promise
-
   constructor:(configuration = {}) ->
     @configuration = configuration
     return
@@ -19,7 +17,7 @@ class Poseidon
 
       code = file.code = []
 
-      dependencies = ["var Promise = require('poseidon').Promise;"]
+      dependencies = ["var Promise = require('bluebird');"]
       for dependency, dependencyPath of classSchema.require
         dependencies.push "var #{dependency} = require('#{dependencyPath}');"
 

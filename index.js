@@ -4,9 +4,9 @@ if (process.env.PLAYLYFE_TEST) {
   try {
     index = require('./src-cov/poseidon');
   } catch(e) {
-    index = require('./src/poseidon');
+    index = require('./lib/poseidon');
   }
 } else {
-  index = require('./src/poseidon');
+  index = require('./lib/poseidon');
 }
 module.exports = index;
