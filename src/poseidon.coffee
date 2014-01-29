@@ -46,8 +46,11 @@ class Poseidon
           hunk.push(functionSchema.body)
         else
           # Create deferred and callback if wrap option is true
-          if functionSchema.wrap
+          if functionSchema.wrap or classSchema.type is 'promise'
             hunk.push "var deferred = Promise.pending();"
+
+          if not functionSchema.wrap
+            hunk.push "var result;"
 
           if classSchema.type is 'promise'
             hunk.push "this.instance.then(function (instanceValue) {"
@@ -126,12 +129,15 @@ class Poseidon
               #{if functionSchema.wrap then "" else "result = "}#{instanceIdentifier}.#{functionName}.apply(#{instanceIdentifier}, #{if functionSchema.wrap then "Array.prototype.slice.call(null, args).concat(callback)" else "args"});
               break;
           }
+          #{if not functionSchema.wrap and classSchema.type is 'promise' and functionSchema.return? then "result = new #{functionSchema.return[0]}(result);" else ""}
+          #{if not functionSchema.wrap and classSchema.type is 'promise' then "deferred.resolve(result);" else ""}
           """
           if classSchema.type is 'promise'
             hunk.push "});"
 
           # Return promise if wrap option is set
-          if functionSchema.wrap
+          if functionSchema.wrap or classSchema.type is 'promise'
+            if not functionSchema.wrap and functionSchema.return?.length > 1 then throw new Error("Only 1 return value allowed when no callback is present")
             hunk.push "return deferred.promise;"
           else
             # If no wrap option is allowed only 1 value can be set in return
