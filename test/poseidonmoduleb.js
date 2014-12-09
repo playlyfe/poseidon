@@ -1,17 +1,24 @@
-Promise = require('poseidon').Promise;
+var Promise = require('bluebird');
 function PoseidonModuleB(moduleB) {
     this.instance = Promise.resolve(moduleB);
     return;
 }
 PoseidonModuleB.prototype.callbackFunction = function () {
     var args = arguments;
-    var deferred = Promise.pending();
+    var deferred = Promise.defer();
     this.instance.then(function (instanceValue) {
         var callback = function () {
             if (arguments[0]) {
-                deferred.reject(arguments[0]);
+                if (arguments.length === 1 || arguments[1] == null) {
+                    deferred.reject(arguments[0]);
+                } else {
+                    deferred.reject(Array.prototype.slice.call(arguments, 0));
+                }
             } else {
                 switch (arguments.length) {
+                case 0:
+                    deferred.resolve();
+                    break;
                 case 2:
                     deferred.resolve(arguments[1]);
                     break;
@@ -46,7 +53,7 @@ PoseidonModuleB.prototype.callbackFunction = function () {
                     ]);
                     break;
                 default:
-                    deferred.resolve(arguments.slice(1));
+                    deferred.resolve(Array.prototype.slice.call(null, arguments, 1));
                     break;
                 }
             }
@@ -79,13 +86,20 @@ PoseidonModuleB.prototype.callbackFunction = function () {
 };
 PoseidonModuleB.prototype.callbackFunction2 = function () {
     var args = arguments;
-    var deferred = Promise.pending();
+    var deferred = Promise.defer();
     this.instance.then(function (instanceValue) {
         var callback = function () {
             if (arguments[0]) {
-                deferred.reject(arguments[0]);
+                if (arguments.length === 1 || arguments[1] == null) {
+                    deferred.reject(arguments[0]);
+                } else {
+                    deferred.reject(Array.prototype.slice.call(arguments, 0));
+                }
             } else {
                 switch (arguments.length) {
+                case 0:
+                    deferred.resolve();
+                    break;
                 case 2:
                     deferred.resolve(arguments[1]);
                     break;
@@ -120,7 +134,7 @@ PoseidonModuleB.prototype.callbackFunction2 = function () {
                     ]);
                     break;
                 default:
-                    deferred.resolve(arguments.slice(1));
+                    deferred.resolve(Array.prototype.slice.call(null, arguments, 1));
                     break;
                 }
             }
@@ -153,6 +167,8 @@ PoseidonModuleB.prototype.callbackFunction2 = function () {
 };
 PoseidonModuleB.prototype.chainableFunction = function () {
     var args = arguments;
+    var deferred = Promise.defer();
+    var result;
     this.instance.then(function (instanceValue) {
         switch (args.length) {
         case 0:
@@ -177,7 +193,8 @@ PoseidonModuleB.prototype.chainableFunction = function () {
             result = instanceValue.chainableFunction.apply(instanceValue, args);
             break;
         }
+        deferred.resolve(result);
     });
-    return this;
+    return deferred.promise;
 };
 module.exports = PoseidonModuleB;

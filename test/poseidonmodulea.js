@@ -1,17 +1,24 @@
-Promise = require('poseidon').Promise;
-PoseidonModuleB = require('./poseidonmoduleb');
+var Promise = require('bluebird');
+var PoseidonModuleB = require('./poseidonmoduleb');
 function PoseidonModuleA(moduleA) {
     this.instance = moduleA;
     return;
 }
 PoseidonModuleA.prototype.callbackFunction = function () {
     var args = arguments;
-    var deferred = Promise.pending();
+    var deferred = Promise.defer();
     var callback = function () {
         if (arguments[0]) {
-            deferred.reject(arguments[0]);
+            if (arguments.length === 1 || arguments[1] == null) {
+                deferred.reject(arguments[0]);
+            } else {
+                deferred.reject(Array.prototype.slice.call(arguments, 0));
+            }
         } else {
             switch (arguments.length) {
+            case 0:
+                deferred.resolve();
+                break;
             case 2:
                 deferred.resolve(arguments[1]);
                 break;
@@ -46,7 +53,7 @@ PoseidonModuleA.prototype.callbackFunction = function () {
                 ]);
                 break;
             default:
-                deferred.resolve(arguments.slice(1));
+                deferred.resolve(Array.prototype.slice.call(null, arguments, 1));
                 break;
             }
         }
@@ -78,12 +85,19 @@ PoseidonModuleA.prototype.callbackFunction = function () {
 };
 PoseidonModuleA.prototype.callbackFunction2 = function () {
     var args = arguments;
-    var deferred = Promise.pending();
+    var deferred = Promise.defer();
     var callback = function () {
         if (arguments[0]) {
-            deferred.reject(arguments[0]);
+            if (arguments.length === 1 || arguments[1] == null) {
+                deferred.reject(arguments[0]);
+            } else {
+                deferred.reject(Array.prototype.slice.call(arguments, 0));
+            }
         } else {
             switch (arguments.length) {
+            case 0:
+                deferred.resolve();
+                break;
             case 2:
                 deferred.resolve(arguments[1]);
                 break;
@@ -118,7 +132,7 @@ PoseidonModuleA.prototype.callbackFunction2 = function () {
                 ]);
                 break;
             default:
-                deferred.resolve(arguments.slice(1));
+                deferred.resolve(Array.prototype.slice.call(null, arguments, 1));
                 break;
             }
         }
@@ -150,13 +164,20 @@ PoseidonModuleA.prototype.callbackFunction2 = function () {
 };
 PoseidonModuleA.prototype.callbackFunction3 = function () {
     var args = arguments;
-    var deferred = Promise.pending();
+    var deferred = Promise.defer();
     var callback = function () {
-        arguments[1] = new PoseidonModuleB(arguments[1]);
         if (arguments[0]) {
-            deferred.reject(arguments[0]);
+            if (arguments.length === 1 || arguments[1] == null) {
+                deferred.reject(arguments[0]);
+            } else {
+                deferred.reject(Array.prototype.slice.call(arguments, 0));
+            }
         } else {
+            arguments[1] = new PoseidonModuleB(arguments[1]);
             switch (arguments.length) {
+            case 0:
+                deferred.resolve();
+                break;
             case 2:
                 deferred.resolve(arguments[1]);
                 break;
@@ -191,7 +212,7 @@ PoseidonModuleA.prototype.callbackFunction3 = function () {
                 ]);
                 break;
             default:
-                deferred.resolve(arguments.slice(1));
+                deferred.resolve(Array.prototype.slice.call(null, arguments, 1));
                 break;
             }
         }
@@ -223,6 +244,7 @@ PoseidonModuleA.prototype.callbackFunction3 = function () {
 };
 PoseidonModuleA.prototype.synchronousFunction = function () {
     var args = arguments;
+    var result;
     switch (args.length) {
     case 0:
         result = this.instance.synchronousFunction();
@@ -250,6 +272,7 @@ PoseidonModuleA.prototype.synchronousFunction = function () {
 };
 PoseidonModuleA.prototype.chainableFunction = function () {
     var args = arguments;
+    var result;
     switch (args.length) {
     case 0:
         result = this.instance.chainableFunction();

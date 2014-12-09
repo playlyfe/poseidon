@@ -1,11 +1,11 @@
-Promise = require('poseidon').Promise;
+var Promise = require('bluebird');
 function PoseidonModuleB(moduleB) {
     this.instance = Promise.resolve(moduleB);
     return;
 }
 PoseidonModuleB.prototype.callbackFunction = function () {
     var args = arguments;
-    var deferred = Promise.pending();
+    var deferred = Promise.defer();
     this.instance.then(function (instanceValue) {
         var callback = function () {
             if (arguments[0]) {
@@ -79,7 +79,7 @@ PoseidonModuleB.prototype.callbackFunction = function () {
 };
 PoseidonModuleB.prototype.callbackFunction2 = function () {
     var args = arguments;
-    var deferred = Promise.pending();
+    var deferred = Promise.defer();
     this.instance.then(function (instanceValue) {
         var callback = function () {
             if (arguments[0]) {

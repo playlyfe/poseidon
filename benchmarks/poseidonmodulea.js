@@ -1,4 +1,4 @@
-Promise = require('poseidon').Promise;
+var Promise = require('bluebird');
 PoseidonModuleB = require('./poseidonmoduleb');
 function PoseidonModuleA(moduleA) {
     this.instance = moduleA;
@@ -6,7 +6,7 @@ function PoseidonModuleA(moduleA) {
 }
 PoseidonModuleA.prototype.callbackFunction = function () {
     var args = arguments;
-    var deferred = Promise.pending();
+    var deferred = Promise.defer();
     var callback = function () {
         if (arguments[0]) {
             deferred.reject(arguments[0]);
@@ -78,7 +78,7 @@ PoseidonModuleA.prototype.callbackFunction = function () {
 };
 PoseidonModuleA.prototype.callbackFunction2 = function () {
     var args = arguments;
-    var deferred = Promise.pending();
+    var deferred = Promise.defer();
     var callback = function () {
         if (arguments[0]) {
             deferred.reject(arguments[0]);
@@ -150,7 +150,7 @@ PoseidonModuleA.prototype.callbackFunction2 = function () {
 };
 PoseidonModuleA.prototype.callbackFunction3 = function () {
     var args = arguments;
-    var deferred = Promise.pending();
+    var deferred = Promise.defer();
     var callback = function () {
         arguments[1] = new PoseidonModuleB(arguments[1]);
         if (arguments[0]) {
