@@ -53,7 +53,11 @@ class Poseidon
             hunk.push "var result;"
 
           if classSchema.type is 'promise'
-            hunk.push "this.instance.then(function (instanceValue) {"
+            hunk.push """
+            this.instance.catch(function(err){
+              deferred.reject(err);
+            }).then(function (instanceValue) {
+            """
 
           if functionSchema.wrap
             # Code to wrap return values
