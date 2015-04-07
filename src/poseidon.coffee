@@ -56,6 +56,7 @@ class Poseidon
             hunk.push """
             this.instance.catch(function(err){
               deferred.reject(err);
+              return deferred.promise;
             }).then(function (instanceValue) {
             """
 
