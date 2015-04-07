@@ -1,7 +1,7 @@
 {
   "name": "poseidon",
   "description": "Simplify Node Callback APIs with an optimized promise layer that doesnt compromise on performance.",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "keywords": [
     "bluebird",
     "optimized",
